@@ -34,8 +34,6 @@ spacex-frontend/ ├── public/ │ └── index.html ├── src/ │ �
 
 ## 🛠️ Instalación
 
-
-
 ```bash
 # Clona el repositorio
 git clone https://github.com/HenryCapdevilla/SpaceX.git
@@ -46,3 +44,100 @@ npm install
 
 # Ejecuta la app
 npm run dev
+
+
+Instrucciones de despliegue (ECR + ECS Fargate)
+
+Este apartado describe el proceso seguido para construir y desplegar la aplicación web dentro de un contenedor Docker, utilizando Amazon ECS con la modalidad de ejecución Fargate.
+
+    Construcción de la imagen Docker
+
+Desde la raíz del proyecto frontend (por ejemplo, un proyecto Vite/React), se ejecutó el siguiente comando:
+
+docker build -t my-react-app .
+
+    Creación del repositorio en Amazon ECR
+
+    Ir a Amazon ECR > Create Repository.
+
+    Nombre del repositorio: spacex/production
+
+    Configuraciones:
+
+        Tag mutability: Mutable
+
+        Encryption: AES-256 (por defecto)
+
+Una vez creado, se obtiene el URI del repositorio. Por ejemplo:
+
+577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production
+
+    Subida de la imagen a ECR
+
+    Autenticarse en ECR:
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 577638359624.dkr.ecr.us-east-1.amazonaws.com
+
+    Etiquetar la imagen local con el repositorio:
+
+docker tag my-react-app:latest 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:latest
+
+    Subir la imagen:
+
+docker push 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:latest
+
+    Configuración de ECS y Fargate
+
+    Ir a Amazon ECS > Clusters > Create Cluster
+
+        Tipo: Networking only (Fargate)
+
+        Nombre del clúster: SpacexCluster
+
+        Crear (si da error por falta de rol, ir a IAM y crear la ECS service-linked role).
+
+    Ir a Tasks > Task Definitions > Create new Task Definition
+
+        Tipo de lanzamiento: Fargate
+
+        Nombre: spacex-frontend-task
+
+        Container definition:
+
+            Image: 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:latest
+
+            Memory: 512 MiB
+
+            CPU: 256
+
+            Port mappings: 80:80
+
+        Network mode: awsvpc
+
+        Task role: dejar predeterminado
+
+    Crear el servicio en el clúster:
+
+        Tipo de servicio: Fargate
+
+        Task definition: seleccionar la creada
+
+        Número de tareas: 1
+
+        Cluster: SpacexCluster
+
+        Subred pública (con ruta a Internet Gateway)
+
+        Security group: permitir tráfico HTTP (puerto 80)
+
+    Verificación
+
+    Ir al clúster > pestaña Tasks
+
+    Esperar a que el estado sea RUNNING
+
+    Hacer clic en la tarea > pestaña Networking
+
+    Copiar la IP pública y acceder vía navegador:
+
+http://<ip-pública>
