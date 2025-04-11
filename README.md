@@ -100,7 +100,7 @@ docker push 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:lates
 
 - Ir a Amazon ECS > Clusters > Create Cluster
 - Tipo: `Networking only (Fargate)`
-- Nombre del clúster: `SpacexCluster`
+- Nombre del clúster: `DevCluster`
 - Si da error por rol, ir a IAM y crear la ECS service-linked role
 
 #### Crear definición de tarea
@@ -110,8 +110,8 @@ docker push 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:lates
 - Nombre: `spacex-frontend-task`
 - Definir contenedor:
   - Image: `577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:latest`
-  - Memory: `512 MiB`
-  - CPU: `256`
+  - Memory: `3 GB`
+  - vCPU: `1`
   - Port mappings: `80:80`
 - Network mode: `awsvpc`
 - Task role: dejar predeterminado
@@ -121,7 +121,7 @@ docker push 577638359624.dkr.ecr.us-east-1.amazonaws.com/spacex/production:lates
 - Tipo de servicio: `Fargate`
 - Task definition: seleccionar la creada
 - Número de tareas: `1`
-- Cluster: `SpacexCluster`
+- Cluster: `DevCluster`
 - Red: usar una subred pública con ruta a Internet Gateway
 - Security group: permitir tráfico HTTP (puerto 80)
 
