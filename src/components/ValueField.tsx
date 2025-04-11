@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -14,20 +14,21 @@ interface ValueFieldProps {
   maxAvailableDate: Date;
   setCurrentPage: (page: number) => void;
   suggestions: string[];
+  dateFilterType: "exact" | "year";
+  setDateFilterType: React.Dispatch<React.SetStateAction<"exact" | "year">>;
 }
 
 const ValueField: React.FC<ValueFieldProps> = ({
   cardFilterField,
   cardFilterValue,
   setCardFilterValue,
-  setStartDate,
-  setEndDate,
   minAvailableDate,
   maxAvailableDate,
   setCurrentPage,
+  suggestions,
+  dateFilterType,
+  setDateFilterType,
 }) => {
-  const [dateFilterType, setDateFilterType] = useState<"exact" | "year" | "month">("exact");
-
   const handleDateChange = (date: Date | null) => {
     if (!date) {
       setCardFilterValue("");
@@ -35,26 +36,39 @@ const ValueField: React.FC<ValueFieldProps> = ({
     }
 
     const formatted = {
-      exact: date.toISOString().slice(0, 10), // yyyy-mm-dd
-      year: date.getFullYear().toString(), // yyyy
-      month: date.toISOString().slice(0, 7), // yyyy-mm
+      exact: date.toISOString().slice(0, 10),
+      year: date.getFullYear().toString(),
     };
 
     setCardFilterValue(formatted[dateFilterType]);
     setCurrentPage(1);
   };
 
+  const dateFormat = dateFilterType === "exact" ? "yyyy-MM-dd" : "yyyy";
+  const placeholder =
+    dateFilterType === "exact"
+      ? "Selecciona una fecha exacta"
+      : "Selecciona un año";
+  
+  const selectedDate =
+    dateFilterType === "year"
+    ? /^\d{4}$/.test(cardFilterValue)
+      ? new Date(Number(cardFilterValue), 0, 1)
+      : null
+    : cardFilterValue && !isNaN(Date.parse(cardFilterValue))
+    ? new Date(cardFilterValue)
+    : null;
+    
   return (
-    <div className="flex-1 w-full relative">
+    <div className="flex-1 w-full">
       <label className="text-sm block mb-1 font-semibold">Buscar:</label>
 
       {cardFilterField === "launch_date" ? (
         <div className="flex flex-col md:flex-row gap-2">
-          {/* Selector de tipo de filtro de fecha */}
           <select
             value={dateFilterType}
             onChange={(e) => {
-              setDateFilterType(e.target.value as "exact" | "year" | "month");
+              setDateFilterType(e.target.value as "exact" | "year");
               setCardFilterValue("");
               setCurrentPage(1);
             }}
@@ -62,34 +76,15 @@ const ValueField: React.FC<ValueFieldProps> = ({
           >
             <option value="exact">Por fecha exacta</option>
             <option value="year">Por año</option>
-            <option value="month">Por mes</option>
           </select>
 
-          {/* Selector de fecha flexible según tipo */}
           <div className="w-full md:w-3/4">
             <DatePicker
-              selected={
-                cardFilterValue
-                  ? new Date(cardFilterValue)
-                  : null
-              }
+              selected={selectedDate}
               onChange={handleDateChange}
-              dateFormat={
-                dateFilterType === "exact"
-                  ? "yyyy-MM-dd"
-                  : dateFilterType === "month"
-                  ? "yyyy-MM"
-                  : "yyyy"
-              }
+              dateFormat={dateFormat}
               showYearPicker={dateFilterType === "year"}
-              showMonthYearPicker={dateFilterType === "month"}
-              placeholderText={
-                dateFilterType === "exact"
-                  ? "Selecciona una fecha exacta"
-                  : dateFilterType === "month"
-                  ? "Selecciona un mes"
-                  : "Selecciona un año"
-              }
+              placeholderText={placeholder}
               className="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
               minDate={minAvailableDate}
               maxDate={maxAvailableDate}
@@ -98,7 +93,7 @@ const ValueField: React.FC<ValueFieldProps> = ({
           </div>
         </div>
       ) : (
-        <>
+        <div className="relative w-1/4">
           <input
             type="text"
             placeholder="Escribe o haz clic en una sugerencia..."
@@ -107,7 +102,7 @@ const ValueField: React.FC<ValueFieldProps> = ({
               setCardFilterValue(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-4 py-2 pr-10 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+            className="w-full px-4 py-2 pr-8 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
           />
           {cardFilterValue && (
             <button
@@ -115,13 +110,13 @@ const ValueField: React.FC<ValueFieldProps> = ({
                 setCardFilterValue("");
                 setCurrentPage(1);
               }}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 text-lg leading-none"
               aria-label="Limpiar filtro"
             >
               ×
             </button>
           )}
-        </>
+        </div>
       )}
     </div>
   );
