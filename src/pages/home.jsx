@@ -231,37 +231,29 @@ const [launches, setLaunches] = useState([]);
                 {/* Leyenda personalizada */}
                 <div
                   className="bg-gray-700 text-white text-sm rounded p-4 shadow-md space-y-2 
-                        w-full md:w-[500px] md:absolute md:top-4 md:right-4 
-                        max-h-[240px] md:max-h-[460px] overflow-auto mb-4 md:mb-0"
+             w-full md:w-[300px] md:absolute md:top-4 md:right-4 
+             max-h-[100px] overflow-y-auto mb-4 md:mb-0"
                 >
-                  {getChartData()
-                    .labels.slice(0, 16)
-                    .map((label, index) => (
+                  {getChartData().labels.map((label, index) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between gap-3"
+                    >
                       <div
-                        key={label}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-sm"
-                          style={{
-                            backgroundColor:
-                              getChartData().datasets[0].backgroundColor?.[
-                                index
-                              ] || "#ccc",
-                          }}
-                        />
-                        <span className="flex-1 truncate font-medium">
-                          {label}
-                        </span>
-                        <span>{getChartData().datasets[0].data[index]}</span>
-                      </div>
-                    ))}
-
-                  {getChartData().labels.length > 16 && (
-                    <div className="text-xs italic text-gray-300 mt-2 text-center">
-                      +{getChartData().labels.length - 16} más...
+                        className="w-3 h-3 rounded-sm"
+                        style={{
+                          backgroundColor:
+                            getChartData().datasets[0].backgroundColor?.[
+                              index
+                            ] || "#ccc",
+                        }}
+                      />
+                      <span className="flex-1 truncate font-medium">
+                        {label}
+                      </span>
+                      <span>{getChartData().datasets[0].data[index]}</span>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
