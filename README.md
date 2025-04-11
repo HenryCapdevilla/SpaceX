@@ -4,7 +4,7 @@ Aplicación frontend desarrollada en React + TypeScript que muestra información
 
 ## 🌐 Demo
 
-[🔗 Ver demo en línea](http://52.207.217.103/)
+[🔗 Ver demo en línea](http://3.81.85.83/)
 
 ---
 
